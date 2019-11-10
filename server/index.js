@@ -65,11 +65,14 @@ async function gatewayConnexion() {
 }
 
 function socketConnexion(socket) {
+	// possibility to filter / map / delay the observable here and subscribe
+	// to the new one. Any Client can then do whatever he wants to.
 	queryProxy.subscribe({
 		next(value) {
 			data = JSON.parse(value);
 
 			socket.emit('new-message', `Socket ${socket.id} is sending ${data.message}`);
+			console.log(`Socket received from blockchain data with ${JSON.stringify(data)}`)
 			console.log(`submitting value : Socket ${socket.id} is sending ${data.message}`);
 		},
 		error(err) {
@@ -99,7 +102,7 @@ io.on('connection', (socket) => {
 	socketConnexion(socket);
 
     socket.on('new-message', (message) => {
-      console.log(message);
+      console.log(`Server : Received new message with ${message}`);
 
       //io.emit('new-message', `server emission with ${io}`);
       //socket.emit('new-message', `socket emission with ${socket}`);
