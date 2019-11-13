@@ -7,6 +7,8 @@ let server = http.Server(app);
 let socketIO = require('socket.io');
 let io = socketIO(server);
 
+// test something on git
+
 const port = process.env.PORT || 3000;
 
 const { Subject } = require("rxjs");
@@ -51,6 +53,7 @@ async function proxyConnexion() {
 	}
 }
 
+/* Done only once when the server is runned */
 async function gatewayConnexion() {
 	try {
 		proxies = await reactiveProxyjs.getProxies();
@@ -64,6 +67,7 @@ async function gatewayConnexion() {
 	}
 }
 
+/* Done everytime a user is connected to the front-end application */
 function socketConnexion(socket) {
 	// possibility to filter / map / delay the observable here and subscribe
 	// to the new one. Any Client can then do whatever he wants to.
