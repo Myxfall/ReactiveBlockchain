@@ -35,8 +35,8 @@ async function proxyConnexion() {
 				data = JSON.parse(value);
 
 				//io.emit('news', data);
-                io.emit('new-message', data.message);
-				console.log(`submitting value : ${data.message}`);
+                io.emit('new-message', value);
+				console.log(`----- Sending to socket connexion : ${data} ----- `);
 			},
 			error(err) {
 				io.emit('news', err);
@@ -73,11 +73,13 @@ function socketConnexion(socket) {
 	// to the new one. Any Client can then do whatever he wants to.
 	queryProxy.subscribe({
 		next(value) {
-			data = JSON.parse(value);
 
-			socket.emit('new-message', `Socket ${socket.id} is sending ${data.message}`);
-			console.log(`Socket received from blockchain data with ${JSON.stringify(data)}`)
-			console.log(`submitting value : Socket ${socket.id} is sending ${data.message}`);
+			const new_value = JSON.parse(value);
+
+			socket.emit('new-message', new_value);
+			console.log(`----- Sending to socket connexion : ${value} -----`)
+			//console.log(`Socket received from blockchain data with ${JSON.stringify(data)}`)
+			//console.log(`submitting value : Socket ${socket.id} is sending ${data.message}`);
 		},
 		error(err) {
 			io.emit('news', err);
