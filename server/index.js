@@ -21,6 +21,12 @@ const reactiveProxyjs = require('../../fabric-samples/fabcar/javascript/reactive
 var blockchainProxy;
 var queryProxy;
 var invokeProxy;
+
+var ids = {
+	diplomas: 3,
+	grades: 2
+}
+
 async function proxyConnexion() {
 	try {
 
@@ -77,7 +83,7 @@ function socketConnexion(socket) {
 			const new_value = JSON.parse(value);
 
 			socket.emit('new-message', new_value);
-			console.log(`----- Sending to socket connexion : ${value} -----`)
+			console.log(`Sending to socket connexion : ${value}\n`)
 			//console.log(`Socket received from blockchain data with ${JSON.stringify(data)}`)
 			//console.log(`submitting value : Socket ${socket.id} is sending ${data.message}`);
 		},
@@ -101,6 +107,15 @@ async function sendMessage(message) {
 	}
 }
 
+async function sendDiploma(new_diploma) {
+	try {
+		invokeProxy.next(new_diploma);
+	} catch (e) {
+		console.error(`Failed to submit transaction with : ${e}`);
+		process.exit(1);
+	}
+}
+
 //proxyConnexion();
 gatewayConnexion();
 io.on('connection', (socket) => {
@@ -110,13 +125,15 @@ io.on('connection', (socket) => {
     socket.on('new-message', (message) => {
       console.log(`Server : Received new message with ${message}`);
 
+	  message["diplomaId"] = ids.diplomas;
+	  ++ids.diplomas;
+
       //io.emit('new-message', `server emission with ${io}`);
       //socket.emit('new-message', `socket emission with ${socket}`);
-      sendMessage(message);
+      sendDiploma(message);
 
     });
 });
-
 
 server.listen(port, () => {
     console.log(`started on port: ${port}`);
