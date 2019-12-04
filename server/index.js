@@ -22,11 +22,6 @@ var blockchainProxy;
 var queryProxy;
 var invokeProxy;
 
-var ids = {
-	diplomas: 3,
-	grades: 2
-}
-
 async function proxyConnexion() {
 	try {
 
@@ -124,9 +119,6 @@ io.on('connection', (socket) => {
 
     socket.on('new-message', (message) => {
       console.log(`Server : Received new message with ${message}`);
-
-	  message["diplomaId"] = ids.diplomas;
-	  ++ids.diplomas;
 
       //io.emit('new-message', `server emission with ${io}`);
       //socket.emit('new-message', `socket emission with ${socket}`);
