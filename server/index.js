@@ -7,7 +7,8 @@ let server = http.Server(app);
 let socketIO = require('socket.io');
 let io = socketIO(server);
 
-// test something on git
+const util = require('util');
+
 
 const port = process.env.PORT || 3000;
 
@@ -18,49 +19,33 @@ const { map, filter, take, delay } = require("rxjs/operators");
 
 const reactiveProxyjs = require('../../fabric-samples/fabcar/javascript/reactiveProxy');
 
-var blockchainProxy;
+var blocksProxy;
 var queryProxy;
 var invokeProxy;
 
-async function proxyConnexion() {
-	try {
-
-		proxies = await reactiveProxyjs.getProxies();
-		blockchainProxy = proxies[0].pipe(delay(2000));
-		//blockchainProxy = proxies[0];
-
-		queryProxy = proxies[1];
-
-		blockchainProxy.subscribe({
-			next(value) {
-				data = JSON.parse(value);
-
-				//io.emit('news', data);
-                io.emit('new-message', value);
-				console.log(`----- Sending to socket connexion : ${data} ----- `);
-			},
-			error(err) {
-				io.emit('news', err);
-			},
-			complete() {
-				io.emit('news', "Subject complete");
-			}
-		})
-		//queryProxy.next("Do something for me please");
-
-	} catch (error) {
-		console.error(`Failed to submit transaction: ${error}`);
-		process.exit(1);
-	}
-}
+//const QUERY_CHAINCODE = ["queryAllData"];
+const QUERY_CHAINCODE = ["queryAllDiplomas", "queryAllGrades"];
+const EVENT_LISTENERS = ["sent"];
 
 /* Done only once when the server is runned */
 async function gatewayConnexion() {
 	try {
-		proxies = await reactiveProxyjs.getProxies();
+		[queryProxy, invokeProxy, blocksProxy] = await reactiveProxyjs.getProxies(QUERY_CHAINCODE, EVENT_LISTENERS);
 
-		queryProxy = proxies[0];
-		invokeProxy = proxies[1];
+		blocksProxy.subscribe({
+			next(value) {
+				console.log("Blocks Stream, got New block :");
+				var blocks_json = JSON.parse(value);
+				console.log(util.inspect(blocks_json.header, {showHidden: false, depth: 5}))
+
+			},
+			eror(err) {
+				console.log("Blocks Stream : Something wrong happened with", err);
+			},
+			complete() {
+				console.log("Blocks Stream completed");
+			}
+		})
 
 	} catch (error) {
 		console.error(`Failed to submit transaction: ${error}`);
