@@ -24,7 +24,8 @@ var queryProxy;
 var invokeProxy;
 
 //const QUERY_CHAINCODE = ["queryAllData"];
-const QUERY_CHAINCODE = ["queryAllDiplomas", "queryAllGrades"];
+//const QUERY_CHAINCODE = [["queryAllDiplomas"], ["queryAllGrades"]];
+const QUERY_CHAINCODE = [["queryAllDiplomas"], ["queryCar", "CAR4"], ["queryCar", "CAR2"]];
 const EVENT_LISTENERS = ["sent"];
 
 /* Done only once when the server is runned */
@@ -57,6 +58,8 @@ async function gatewayConnexion() {
 function socketConnexion(socket) {
 	// possibility to filter / map / delay the observable here and subscribe
 	// to the new one. Any Client can then do whatever he wants to.
+
+	//blockchainProxy = proxies[0].pipe(delay(2000));
 	queryProxy.subscribe({
 		next(value) {
 
