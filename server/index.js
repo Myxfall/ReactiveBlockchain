@@ -24,8 +24,8 @@ var queryProxy;
 var invokeProxy;
 
 //const QUERY_CHAINCODE = ["queryAllData"];
-//const QUERY_CHAINCODE = [["queryAllDiplomas"], ["queryAllGrades"]];
-const QUERY_CHAINCODE = [["queryAllDiplomas"], ["queryCar", "CAR4"], ["queryCar", "CAR2"]];
+const QUERY_CHAINCODE = [["queryAllDiplomas"], ["queryAllGrades"]];
+//const QUERY_CHAINCODE = [["queryAllDiplomas"], ["queryCar", "CAR4"], ["queryCar", "CAR2"]];
 const EVENT_LISTENERS = ["sent"];
 
 /* Done only once when the server is runned */
