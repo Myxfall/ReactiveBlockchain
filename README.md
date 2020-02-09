@@ -21,7 +21,7 @@ There are two steps to retrieve data from the blockchain:
 ##### Initialisation Phase
 When the project is started, the module has to retrieve the data that is already stored in the blockchain. The module will then call a a series of contracts that will fill in the data stream. For this you have to provide a *list* of contracts, with their arguments if necessary, that are going to be called. 
 
-You have to specify the list of contracts that are going to be called by creation a *CONST* in your project and send it to the *getProxies* function provided by the module.
+You have to specify the list of contracts that are going to be called by creation a *CONST* in your project and send it to the *getProxies* function provided by the module. 
 
 ```java
 const QUERY_CHAINCODE = [["queryAllDiplomas"], ["queryGrade", "GRADE10"], ["queryGrade", "GRADE56"]];
@@ -31,6 +31,22 @@ const QUERY_CHAINCODE = [["queryAllDiplomas"], ["queryGrade", "GRADE10"], ["quer
 [...] = await reactiveProxyjs.getProxies(QUERY_CHAINCODE, ...);
 
 ```
+
+##### Running Phase
+Once the project is running and the data stream filled with the data already existing in the blockchain, the same datastream will be filled by the new information send to the blockchain. This is done by a listening process converted to the stream. For this the developpers **should** know their blockchain and the custom events specified in the contracts.
+
+You just have to specify the specific events name and send it to the *getProxies* function.
+
+```java
+const EVENT_LISTENERS = ["diplomaEvent", "gradeEvent"];
+
+...
+
+[...] = await reactiveProxyjs.getProxies(..., EVENT_LISTENERS);
+
+```
+
+This function then returns the three datastream that you are going to interact with. The first one is the *queryProxy* filled with the data from the blockchain. This same stream is also now listening for future addition in the blockchain and will send these data to the same stream.
 
 ### Ingoing
 
