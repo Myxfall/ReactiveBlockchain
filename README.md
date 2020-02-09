@@ -69,4 +69,6 @@ You then have to transmit this json object to the corresponding data stream
 invokeProxy.next(json_to_send);
 ```
 
+Once the blockchain has approved the new data, the *outgoing* stream will receive the new information and will spread it to all the peers.
+
 ### Blocks Stream
