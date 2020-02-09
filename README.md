@@ -49,5 +49,24 @@ const EVENT_LISTENERS = ["diplomaEvent", "gradeEvent"];
 This function then returns the three datastream that you are going to interact with. The first one is the *queryProxy* filled with the data from the blockchain. This same stream is also now listening for future addition in the blockchain and will send these data to the same stream.
 
 ### Ingoing
+This stream is used to send new data to the blockchain through the data stream. Since we are talking about blockchain and contracts, the data send should follows your contracts convention. In addition they should also specify the name of the contract you are going to call. All these information are stored in the *JSON* send through the stream. You then first have to specify the name of the contract you are going to call followed by the arguments of your contracts, following their specification order.
+
+```java
+json_to_send = {
+        contractName: "createDiploma",
+        args: {
+            username: "your_username",
+            school: "your_school",
+            study: "your_study",
+            first_name: "your_first_name",
+            last_name: "your_last_name"
+        }
+    }
+```
+
+You then have to transmit this json object to the corresponding data stream
+```java
+invokeProxy.next(json_to_send);
+```
 
 ### Blocks Stream
