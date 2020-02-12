@@ -48,6 +48,30 @@ const EVENT_LISTENERS = ["diplomaEvent", "gradeEvent"];
 
 This function then returns the three datastream that you are going to interact with. The first one is the *queryProxy* filled with the data from the blockchain. This same stream is also now listening for future addition in the blockchain and will send these data to the same stream.
 
+#### Server Setup
+After retrieving the data streams from the function `getProxies(...)`, you will just have to subscribe to the *outgoing* stream in order to handle the data from the blockchain in the way your application would need, and *next* new data to the *ingoing* stream to send new transactions to the blockchain
+
+##### Subscription
+In the following example, we send the new data received to the webapplication using *websockets*
+
+```java
+[outGoingProxy, *, *] = await reactiveProxyjs.getProxies(QUERY_CHAINCODE, EVENT_LISTENERS);
+outGoingProxy.subscribe({
+		next(value) {
+			const new_value = JSON.parse(value);
+			socket.emit('new-value', new_value);
+			console.log(`Receive new data from the blockchain : ${value}\n`)
+		},
+		error(err) {
+			io.emit('news', err);
+		},
+		complete() {
+			io.emit('news', "Subject complete");
+		}
+	})
+```
+
+
 ### Ingoing
 This stream is used to send new data to the blockchain through the data stream. Since we are talking about blockchain and contracts, the data send should follows your contracts convention. In addition they should also specify the name of the contract you are going to call. All these information are stored in the *JSON* send through the stream. You then first have to specify the name of the contract you are going to call followed by the arguments of your contracts, following their specification order.
 
