@@ -100,3 +100,4 @@ invokeProxy.next(json_to_send);
 Once the blockchain has approved the new data, the *outgoing* stream will receive the new information and will spread it to all the peers.
 
 ### Blocks Stream
+The last data stream is used to confirm transactions send to the blockchain. Since a transaction is only valid in a blockchain when the transaction is part of a block, this stream is going to be use to confirm new transaction. This stream contains the recent blocks added and confirmed by the peers of the blockchain. The client application can then be sure, by verifying that a specific transaction *id* is part of the transactions within the new block.
