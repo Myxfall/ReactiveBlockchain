@@ -2,6 +2,10 @@
 
 ## Schema project
 
+<p align="center">
+	<img src="https://github.com/Myxfall/reactiveBlockchain/blob/master/blockchain.jpg" width="60%">
+</p>
+
 ## Data Streams
 The module provides three different type of datastream later explained. The first data stream is the outgoing stream from the blockchain. The information stored in the blockchain ledger could be present in this actual stream. The second stream is used to send information into the blockchain, meaning that you are actually going to send a new transaction to the blockchain. The last stream will be composed of history of blocks addition from the blockchain used to verify that new information sent to the blockchain has been approved and added in the ledger.
 
