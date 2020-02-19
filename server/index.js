@@ -12,7 +12,7 @@ const util = require('util');
 
 const port = process.env.PORT || 3000;
 
-const { Subject } = require("rxjs");
+const { Subject, from, of } = require("rxjs");
 const { Observable } = require("rxjs/Observable");
 const { map, filter, take, delay } = require("rxjs/operators");
 
@@ -32,6 +32,30 @@ const EVENT_LISTENERS = ["sent"];
 async function gatewayConnexion() {
 	try {
 		[queryProxy, invokeProxy, blocksProxy] = await reactiveProxyjs.getProxies(QUERY_CHAINCODE, EVENT_LISTENERS);
+
+ 		// ===== TESTING NEW MAIN MODULE STREAM =====
+
+		moduleStream = await reactiveProxyjs.getMainStream();
+
+		moduleStream.next("Just a hello world");
+		moduleStream.next(queryDiploma = {
+			type: "query_blockchain",
+			contract_name: "queryCar",
+			args: ["CAR1"]
+		});
+
+		of([1,2,3]).subscribe({
+			next(value) {
+				console.log(value);
+			}
+		})
+		from([1,2,3]).subscribe({
+			next(value) {
+				console.log(value);
+			}
+		})
+
+		// ===== END OF TESTING UNIT =====
 
 		blocksProxy.subscribe({
 			next(value) {
