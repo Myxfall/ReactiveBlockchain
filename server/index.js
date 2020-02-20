@@ -37,22 +37,32 @@ async function gatewayConnexion() {
 
 		moduleStream = await reactiveProxyjs.getMainStream();
 
-		moduleStream.next("Just a hello world");
-		moduleStream.next(queryDiploma = {
-			type: "query_blockchain",
-			contract_name: "queryCar",
-			args: ["CAR1"]
-		});
+		// Throw error
+		// moduleStream.next("Just a hello world");
+		// // Send query to blockchain
+		// moduleStream.next(queryDiploma = {
+		// 	type: "query_blockchain",
+		// 	contract_name: "queryCar",
+		// 	args: ["CAR1"]
+		// });
+		// moduleStream.next(queryDiploma = {
+		// 	type: "query_blockchain",
+		// 	contract_name: "queryAllDiplomas",
+		// 	args: []
+		// });
+		// const obs_test = of({
+		// 	type: "test_JSON_stream",
+		// 	contract_name: "just_something",
+		// 	args: [1,2,3]
+		// });
+		// moduleStream.next({
+		// 	type: "specific_test",
+		// 	contract_name: "test_name",
+		// 	args: obs_test
+		// })
 
-		of([1,2,3]).subscribe({
-			next(value) {
-				console.log(value);
-			}
-		})
-		from([1,2,3]).subscribe({
-			next(value) {
-				console.log(value);
-			}
+		moduleStream.next({
+			type: "block_history"
 		})
 
 		// ===== END OF TESTING UNIT =====
