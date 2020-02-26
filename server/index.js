@@ -65,6 +65,29 @@ async function gatewayConnexion() {
 			type: "block_history"
 		})
 
+		moduleStream.next({
+			type: "listen_blockchain",
+			eventName: "sent"
+		});
+
+		// setTimeout(() => {  console.log("Delaying"); }, 5000);
+		setTimeout(() => {
+			moduleStream.next({
+				type: "invoke_blockchain",
+				contractName: "createDiploma",
+				args: {
+					username: "tperale",
+					school: "VUBBBB",
+					study: "Computer Science",
+					first_name: "Thomas",
+					last_name: "Perale"
+				}
+			})
+		}, 5000);
+
+
+
+
 		// ===== END OF TESTING UNIT =====
 
 		blocksProxy.subscribe({
