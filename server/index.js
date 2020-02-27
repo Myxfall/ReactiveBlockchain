@@ -31,11 +31,65 @@ const EVENT_LISTENERS = ["sent"];
 /* Done only once when the server is runned */
 async function gatewayConnexion() {
 	try {
-		[queryProxy, invokeProxy, blocksProxy] = await reactiveProxyjs.getProxies(QUERY_CHAINCODE, EVENT_LISTENERS);
 
  		// ===== TESTING NEW MAIN MODULE STREAM =====
 
-		moduleStream = await reactiveProxyjs.getMainStream();
+		const hyperledgerProxy = await reactiveProxyjs.setupConnexion({
+			user: 'user1',
+			channel: 'mychannel',
+			contract: 'fabcar'
+		});
+
+		/*
+		const dataStream = await reactiveProxyjs.dataProxy(hyperledgerProxy, {
+			contract_name: "queryAllDiplomas",
+			args: []
+		});
+		dataStream.subscribe({
+			next(value) {
+				console.log("MMMMMM VALUE FROM OBSERVABLE MMMMMM");
+				console.log(value);
+			}
+		});
+		*/
+
+		const blockhistoryStream = await reactiveProxyjs.blocksProxy(hyperledgerProxy);
+		blockhistoryStream.subscribe({
+			next(value) {
+				console.log("===== BLOCKS HISTORY =====");
+				console.log(value);
+			}
+		});
+
+		/*
+		const eventStream = await reactiveProxyjs.eventProxy(hyperledgerProxy, 'sent');
+		eventStream.subscribe({
+			next(value) {
+				console.log("===== GOT VALUE FROM LISTENER =====");
+				const new_value = JSON.parse(value);
+				console.log(new_value);
+			}
+		});
+		*/
+
+		/*
+		const transactionStream = reactiveProxyjs.transactionProxy(hyperledgerProxy);
+		setTimeout(() => { transactionStream.next({
+				contractName: "createDiploma",
+				args: {
+					username: "MAXROMAI",
+					school: "ICHEC",
+					study: "Computer Science",
+					first_name: "ROBNERT",
+					last_name: "Romain",
+				}
+			})}, 5000
+		);
+		*/
+
+
+
+		//moduleStream = await reactiveProxyjs.getMainStream();
 
 		// Throw error
 		// moduleStream.next("Just a hello world");
@@ -61,34 +115,36 @@ async function gatewayConnexion() {
 		// 	args: obs_test
 		// })
 
-		moduleStream.next({
-			type: "block_history"
-		})
-
-		moduleStream.next({
-			type: "listen_blockchain",
-			eventName: "sent"
-		});
+		// moduleStream.next({
+		// 	type: "block_history"
+		// })
+		//
+		// moduleStream.next({
+		// 	type: "listen_blockchain",
+		// 	eventName: "sent"
+		// });
 
 		// setTimeout(() => {  console.log("Delaying"); }, 5000);
-		setTimeout(() => {
-			moduleStream.next({
-				type: "invoke_blockchain",
-				contractName: "createDiploma",
-				args: {
-					username: "tperale",
-					school: "VUBBBB",
-					study: "Computer Science",
-					first_name: "Thomas",
-					last_name: "Perale"
-				}
-			})
-		}, 5000);
+		// setTimeout(() => {
+		// 	moduleStream.next({
+		// 		type: "invoke_blockchain",
+		// 		contractName: "createDiploma",
+		// 		args: {
+		// 			username: "tperale",
+		// 			school: "VUBBBB",
+		// 			study: "Computer Science",
+		// 			first_name: "Thomas",
+		// 			last_name: "Perale"
+		// 		}
+		// 	})
+		// }, 5000);
 
 
 
 
 		// ===== END OF TESTING UNIT =====
+
+		[queryProxy, invokeProxy, blocksProxy] = await reactiveProxyjs.getProxies(QUERY_CHAINCODE, EVENT_LISTENERS);
 
 		blocksProxy.subscribe({
 			next(value) {
