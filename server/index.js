@@ -28,6 +28,8 @@ const QUERY_CHAINCODE = [["queryAllDiplomas"], ["queryAllGrades"]];
 //const QUERY_CHAINCODE = [["queryAllDiplomas"], ["queryCar", "CAR4"], ["queryCar", "CAR2"]];
 const EVENT_LISTENERS = ["sent"];
 
+// TODO: read more about example IBM usage of hyperleder
+
 /* Done only once when the server is runned */
 async function gatewayConnexion() {
 	try {
@@ -40,21 +42,28 @@ async function gatewayConnexion() {
 			contract: 'fabcar'
 		});
 
-		/*
-		const dataStream = await reactiveProxyjs.dataProxy(hyperledgerProxy, {
-			contract_name: "queryAllDiplomas",
-			args: []
-		});
-		dataStream.subscribe({
-			next(value) {
-				console.log("MMMMMM VALUE FROM OBSERVABLE MMMMMM");
-				console.log(value);
-			}
-		});
-		*/
+		// const dataStream = await reactiveProxyjs.dataProxy(hyperledgerProxy, {
+		// 	contract_name: "queryAllDiplomas",
+		// 	args: []
+		// });
+		// dataStream.subscribe({
+		// 	next(value) {
+		// 		console.log("MMMMMM VALUE FROM OBSERVABLE MMMMMM");
+		// 		console.log(value);
+		// 	}
+		// });
+		//
+		//
+		// const blockhistoryStream = await reactiveProxyjs.blocksProxy(hyperledgerProxy);
+		// blockhistoryStream.subscribe({
+		// 	next(value) {
+		// 		console.log("===== BLOCKS HISTORY =====");
+		// 		console.log(value);
+		// 	}
+		// });
 
-		const blockhistoryStream = await reactiveProxyjs.blocksProxy(hyperledgerProxy);
-		blockhistoryStream.subscribe({
+		const test = reactiveProxyjs.testBlocks(hyperledgerProxy);
+		test.subscribe({
 			next(value) {
 				console.log("===== BLOCKS HISTORY =====");
 				console.log(value);
@@ -82,11 +91,11 @@ async function gatewayConnexion() {
 					study: "Computer Science",
 					first_name: "ROBNERT",
 					last_name: "Romain",
+					poulou: "testtest"
 				}
 			})}, 5000
 		);
 		*/
-
 
 
 		//moduleStream = await reactiveProxyjs.getMainStream();
