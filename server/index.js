@@ -12,9 +12,9 @@ const util = require('util');
 
 const port = process.env.PORT || 3000;
 
-const { Subject, from, of } = require("rxjs");
+const { Subject, from, of, throwError } = require("rxjs");
 const { Observable } = require("rxjs/Observable");
-const { map, filter, take, delay } = require("rxjs/operators");
+const { catchError, map, filter, take, delay } = require("rxjs/operators");
 
 
 const reactiveProxyjs = require('../../fabric-samples/fabcar/javascript/reactiveProxy');
@@ -42,36 +42,39 @@ async function gatewayConnexion() {
 			contract: 'fabcar'
 		});
 
-		// const dataStream = await reactiveProxyjs.dataProxy(hyperledgerProxy, {
-		// 	contract_name: "queryAllDiplomas",
-		// 	args: []
-		// });
-		// dataStream.subscribe({
-		// 	next(value) {
-		// 		console.log("MMMMMM VALUE FROM OBSERVABLE MMMMMM");
-		// 		console.log(value);
-		// 	}
-		// });
-		//
-		//
-		// const blockhistoryStream = await reactiveProxyjs.blocksProxy(hyperledgerProxy);
-		// blockhistoryStream.subscribe({
+		/*
+		const dataStream = reactiveProxyjs.dataProxy(hyperledgerProxy, {
+			contract_name: "queryAllDiplomass",
+			args: []
+		});
+		dataStream.subscribe({
+			next(value) {
+				console.log("MMMMMM VALUE FROM OBSERVABLE MMMMMM");
+				console.log(value);
+			}
+		});
+		*/
+
+		/*
+		const blockhistoryStream = reactiveProxyjs.blocksProxy(hyperledgerProxy);
+		blockhistoryStream.subscribe({
+			next(value) {
+				console.log("===== BLOCKS HISTORY =====");
+				console.log(value);
+			}
+		});
+		*/
+
+		// const test = reactiveProxyjs.testBlocks(hyperledgerProxy);
+		// test.subscribe({
 		// 	next(value) {
 		// 		console.log("===== BLOCKS HISTORY =====");
 		// 		console.log(value);
 		// 	}
 		// });
 
-		const test = reactiveProxyjs.testBlocks(hyperledgerProxy);
-		test.subscribe({
-			next(value) {
-				console.log("===== BLOCKS HISTORY =====");
-				console.log(value);
-			}
-		});
 
-		/*
-		const eventStream = await reactiveProxyjs.eventProxy(hyperledgerProxy, 'sent');
+		const eventStream = reactiveProxyjs.eventProxy(hyperledgerProxy, 'sent');
 		eventStream.subscribe({
 			next(value) {
 				console.log("===== GOT VALUE FROM LISTENER =====");
@@ -79,24 +82,73 @@ async function gatewayConnexion() {
 				console.log(new_value);
 			}
 		});
-		*/
 
 		/*
 		const transactionStream = reactiveProxyjs.transactionProxy(hyperledgerProxy);
+		transactionStream.subscribe({
+			next(value) {
+				console.log("\n=== TRANSACTION PROXY INDEX SUBSCRIBE ===");
+				console.log(value);
+			}
+		})
 		setTimeout(() => { transactionStream.next({
 				contractName: "createDiploma",
 				args: {
-					username: "MAXROMAI",
+					username: "ERROR",
 					school: "ICHEC",
 					study: "Computer Science",
-					first_name: "ROBNERT",
+					first_name: "ERROR",
 					last_name: "Romain",
-					poulou: "testtest"
+					zoulou: "thang"
 				}
-			})}, 5000
+			})}, 2500
 		);
+		//setTimeout(() => {transactionStream.complete()}, 10000);
 		*/
 
+		const txStream = await reactiveProxyjs.sendTransaction(hyperledgerProxy, {
+				contractName: "createDiploma",
+				args: {
+					username: "151",
+					school: "ICHEC",
+					study: "Computer Science",
+					first_name: "TEST",
+					last_name: "TEST",
+					zoulou:"dfjhk"
+				}
+			});
+		txStream
+		.pipe(
+			catchError(err =>  {
+				console.log("====== Handling error and rethrow it ======");
+				console.log(err);
+				return throwError(err);
+			})
+		)
+		.subscribe({
+			next(value) {
+				console.log("+++ index server : tx stream +++");
+				console.log(value);
+			},
+			error(err) {
+				console.log("+++ index server : error value +++");
+				console.log(err);
+			},
+			complete() {
+				console.log("+++ index tx stream completed +++");
+			}
+		});
+
+		const observable = new Observable(subscriber => {
+			  subscriber.next(1);
+			  subscriber.next(2);
+			  subscriber.next(3);
+		});
+		observable.subscribe({
+			next(x) {
+				console.log(x)
+			}
+		});
 
 		//moduleStream = await reactiveProxyjs.getMainStream();
 
