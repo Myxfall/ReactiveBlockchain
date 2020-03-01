@@ -42,18 +42,25 @@ async function gatewayConnexion() {
 			contract: 'fabcar'
 		});
 
-		/*
+
 		const dataStream = reactiveProxyjs.dataProxy(hyperledgerProxy, {
-			contract_name: "queryAllDiplomass",
+			contract_name: "queryAllDiplomas",
 			args: []
 		});
 		dataStream.subscribe({
 			next(value) {
 				console.log("MMMMMM VALUE FROM OBSERVABLE MMMMMM");
 				console.log(value);
+			},
+			error(err) {
+				console.log("Error stream dataProxy");
+				console.log(err);
+			},
+			complete() {
+				console.log("MMMMMM DataProxy Completed MMMMMM");
 			}
 		});
-		*/
+
 
 		/*
 		const blockhistoryStream = reactiveProxyjs.blocksProxy(hyperledgerProxy);
@@ -73,7 +80,7 @@ async function gatewayConnexion() {
 		// 	}
 		// });
 
-
+		/*
 		const eventStream = reactiveProxyjs.eventProxy(hyperledgerProxy, 'sent');
 		eventStream.subscribe({
 			next(value) {
@@ -82,6 +89,7 @@ async function gatewayConnexion() {
 				console.log(new_value);
 			}
 		});
+		*/
 
 		/*
 		const transactionStream = reactiveProxyjs.transactionProxy(hyperledgerProxy);
@@ -105,7 +113,7 @@ async function gatewayConnexion() {
 		);
 		//setTimeout(() => {transactionStream.complete()}, 10000);
 		*/
-
+		/*
 		const txStream = await reactiveProxyjs.sendTransaction(hyperledgerProxy, {
 				contractName: "createDiploma",
 				args: {
@@ -138,7 +146,7 @@ async function gatewayConnexion() {
 				console.log("+++ index tx stream completed +++");
 			}
 		});
-
+		*/
 		const observable = new Observable(subscriber => {
 			  subscriber.next(1);
 			  subscriber.next(2);
