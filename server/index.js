@@ -44,16 +44,17 @@ async function gatewayConnexion() {
 
 
 		const dataStream = reactiveProxyjs.dataProxy(hyperledgerProxy, {
-			contract_name: "queryAllDiplomas",
+			contract_name: "queryAllDiplomass",
 			args: []
 		});
-		dataStream.subscribe({
+		dataStream
+		.subscribe({
 			next(value) {
 				console.log("MMMMMM VALUE FROM OBSERVABLE MMMMMM");
 				console.log(value);
 			},
 			error(err) {
-				console.log("Error stream dataProxy");
+				console.log("\nMMMMMM Error stream dataProxy MMMMMM");
 				console.log(err);
 			},
 			complete() {
