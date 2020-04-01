@@ -12,9 +12,9 @@ const util = require('util');
 
 const port = process.env.PORT || 3000;
 
-const { Subject, from, of, throwError, merge } = require("rxjs");
+const { Subject, ReplaySubject, from, of, throwError, merge } = require("rxjs");
 const { Observable } = require("rxjs/Observable");
-const { catchError, map, filter, take, delay } = require("rxjs/operators");
+const { catchError, map, reduce, scan, filter, take, delay } = require("rxjs/operators");
 
 
 const reactiveProxyjs = require('../../fabric-samples/fabcar/javascript/reactiveProxy');
@@ -75,7 +75,7 @@ async function gatewayConnexion() {
 		// const pushQuery = await reactiveProxyjs.pushQuery(hyperledgerProxy,
 		// 	{
 		// 		select: "*",
-		// 		from: ["newGrade", "newDiploma"],
+		// 		from: ["newGrade"],
 		// 		where: ["maxromai"]
 		// 	}
 		// );
@@ -84,22 +84,54 @@ async function gatewayConnexion() {
 		// 		console.log("MMMMM Continuous query Value MMMMM")
 		// 		console.log(value);
 		// 	}
-		// })
+		// });
 
-		const ppQuery = await reactiveProxyjs.ppQuery(hyperledgerProxy, {
+		// const ppQuery = await reactiveProxyjs.ppQuery(hyperledgerProxy, {
+		// 	select: "*",
+		// 	from: ["newDiploma"],
+		// 	where: ["maxromai"]
+		// });
+		// ppQuery
+		// .pipe(filter(object => (object.username == "maxromai" || object.Record.first_name == "Maximilien")))
+		// .subscribe({
+		// 	next(value) {
+		// 		console.log("MMMMM Past & Continuous Query value MMMMM");
+		// 		console.log(value);
+		// 	}
+		// });
+		const ppQueryBis = await reactiveProxyjs.ppQuery(hyperledgerProxy, {
 			select: "*",
-			from: ["newGrade", "newDiploma"],
+			from: ["newGrade"],
 			where: ["maxromai"]
 		});
-		ppQuery
-		.pipe(filter(object => (object.username == "maxromai" || object.Record.first_name == "Maximilien")))
-		.subscribe({
+
+		// const streamProcessed = reactiveProxyjs.streamProcessing(hyperledgerProxy, {
+		// 	select: ["first_name"],
+		// 	from: [ppQuery, ppQueryBis],
+		// 	where: ["maxromai"]
+		// });
+		// streamProcessed.subscribe({
+		// 	next(value) {
+		// 		console.log("MMMMM STREAM PROCESSING MMMMM");
+		// 		console.log(value);
+		// 	}
+		// })
+
+		const source = of({name: "hello", value:1}, {name: "hello", value:2}, {name: "hello", value:10}, {name: "hello", value:4});
+		const example = source.pipe(reduce((acc, val) => {return (acc + (val.value))}, 0));
+		example.subscribe({next(value) {console.log("sum" +value)}});
+
+		const testing = ppQueryBis.pipe(
+			scan((acc, value) => {
+				return acc + (Number(value.Record.grade))
+			}, 0)
+		);
+		testing.subscribe({
 			next(value) {
-				console.log("MMMMM Past & Continuous Query value MMMMM");
+				console.log("MMMMM SUM of the grades MMMMM");
 				console.log(value);
 			}
 		});
-
 
 		/*
 		const blockhistoryStream = reactiveProxyjs.blocksProxy(hyperledgerProxy);
@@ -152,81 +184,82 @@ async function gatewayConnexion() {
 		);
 		//setTimeout(() => {transactionStream.complete()}, 10000);
 		*/
-		setTimeout(async () => {
-			const txStream = await reactiveProxyjs.sendTransaction(hyperledgerProxy, {
-					/*contractName: "createDiploma",
-					args: {
-						username: "maxromai",
-						school: "ICHEC",
-						study: "theatre and being good",
-						first_name: "Maximilien",
-						last_name: "Romain",
-					}*/
-					contractName: "createGrade",
-					args: {
-						username: "maxromai",
-						course: "Be a GOOD boy",
-						grade: "30/20",
-						school: "ICHEC",
-						first_name: "Maximilien",
-						last_name: "Romain",
-					}
-				});
-			txStream
-			.pipe(
-				catchError(err =>  {
-					console.log("====== Handling error and rethrow it ======");
-					console.log(err);
-					return throwError(err);
-				})
-			)
-			.subscribe({
-				next(value) {
-					console.log("+++ index server : tx stream +++");
-					console.log(value);
-				},
-				error(err) {
-					console.log("+++ index server : error value +++");
-					console.log(err);
-				},
-				complete() {
-					console.log("+++ index tx stream completed +++");
-				}
-			});
-		}, 2500);
-		setTimeout(async () => {
-			const txStream = await reactiveProxyjs.sendTransaction(hyperledgerProxy, {
-					contractName: "createDiploma",
-					args: {
-						username: "maxromai",
-						school: "ICHEC",
-						study: "theatre and being good",
-						first_name: "Maximilien",
-						last_name: "Romain",
-					}
-				});
-			txStream
-			.pipe(
-				catchError(err =>  {
-					console.log("====== Handling error and rethrow it ======");
-					console.log(err);
-					return throwError(err);
-				})
-			)
-			.subscribe({
-				next(value) {
-					console.log("+++ index server : tx stream +++");
-					console.log(value);
-				},
-				error(err) {
-					console.log("+++ index server : error value +++");
-					console.log(err);
-				},
-				complete() {
-					console.log("+++ index tx stream completed +++");
-				}
-			});
-		}, 5000);
+		// setTimeout(async () => {
+		// 	const txStream = await reactiveProxyjs.sendTransaction(hyperledgerProxy, {
+		// 			/*contractName: "createDiploma",
+		// 			args: {
+		// 				username: "maxromai",
+		// 				school: "ICHEC",
+		// 				study: "theatre and being good",
+		// 				first_name: "Maximilien",
+		// 				last_name: "Romain",
+		// 			}*/
+		// 			contractName: "createGrade",
+		// 			args: {
+		// 				username: "maxromai",
+		// 				course: "Be a GOOD boy",
+		// 				grade: "15",
+		// 				school: "ICHEC",
+		// 				first_name: "Maximilien",
+		// 				last_name: "Romain",
+		// 			}
+		// 		});
+		// 	txStream
+		// 	.pipe(
+		// 		catchError(err =>  {
+		// 			console.log("====== Handling error and rethrow it ======");
+		// 			console.log(err);
+		// 			return throwError(err);
+		// 		})
+		// 	)
+		// 	.subscribe({
+		// 		next(value) {
+		// 			console.log("+++ index server : tx stream +++");
+		// 			console.log(value);
+		// 		},
+		// 		error(err) {
+		// 			console.log("+++ index server : error value +++");
+		// 			console.log(err);
+		// 		},
+		// 		complete() {
+		// 			console.log("+++ index tx stream completed +++");
+		// 		}
+		// 	});
+		// }, 2500);
+		// setTimeout(async () => {
+		// 	const txStream = await reactiveProxyjs.sendTransaction(hyperledgerProxy, {
+		// 			contractName: "createDiploma",
+		// 			args: {
+		// 				username: "maxromai",
+		// 				school: "ICHEC",
+		// 				study: "theatre and being good",
+		// 				first_name: "Maximilien",
+		// 				last_name: "Romain",
+		// 			}
+		// 		});
+		// 	txStream
+		// 	.pipe(
+		// 		catchError(err =>  {
+		// 			console.log("====== Handling error and rethrow it ======");
+		// 			console.log(err);
+		// 			return throwError(err);
+		// 		})
+		// 	)
+		// 	.subscribe({
+		// 		next(value) {
+		// 			console.log("+++ index server : tx stream +++");
+		// 			console.log(value);
+		// 		},
+		// 		error(err) {
+		// 			console.log("+++ index server : error value +++");
+		// 			console.log(err);
+		// 		},
+		// 		complete() {
+		// 			console.log("+++ index tx stream completed +++");
+		// 		}
+		// 	});
+		// }, 5000);
+
 		const observable = new Observable(subscriber => {
 			  subscriber.next(1);
 			  subscriber.next(2);
@@ -241,9 +274,23 @@ async function gatewayConnexion() {
 			observable,
 			observableBis
 		)
-		third.subscribe({
-			next(x) {
-				console.log(x)
+		// third.subscribe({
+		// 	next(x) {
+		// 		console.log(x)
+		// 	}
+		// });
+
+		const testMerge = new ReplaySubject();
+		const testarray = [third, testMerge];
+		const merged = merge(
+			...testarray
+		);
+		testMerge.next(10);
+		testMerge.next(11);
+
+		merged.subscribe({
+			next(value) {
+				console.log(value);
 			}
 		});
 
