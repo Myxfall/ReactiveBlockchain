@@ -37,9 +37,9 @@ async function gatewayConnexion() {
 		/*
 			Example continuous query
 
-			* Get grade of one student
-			* get diplomas of one unif
-			* get average grade of one unif
+			* Get grade of one student V
+			* get diplomas of one unif V
+			* get average grade of one unif V
 
 		*/
 
@@ -99,10 +99,53 @@ async function gatewayConnexion() {
 		// 		console.log(value);
 		// 	}
 		// });
+		const diplomasStream = await reactiveProxyjs.ppQuery(hyperledgerProxy, {
+			select: "*",
+			from: ["newDiploma"],
+			fromStatic: ["queryAllDiplomas"],
+		});
+		diplomasStream
+		.pipe(
+			filter(object => object.Record.school == "VUB")
+		)
+		.subscribe({
+			next(value) {
+				console.log("MMMMM Filter one university MMMMM");
+				console.log(value);
+			}
+		})
+
 		const ppQueryBis = await reactiveProxyjs.ppQuery(hyperledgerProxy, {
 			select: "*",
-			from: ["newGrade"],
+			from: ["newGrade", "changeGrade"],
+			fromStatic: ["queryAllGrades"],
 			where: ["maxromai"]
+		});
+		const averageGradeStudent = ppQueryBis.pipe(
+			filter(object => object.first_name == "Maximilien" && object.last_name == "Romain"),
+			scan((acc, curr) => {
+				acc.push(Number(curr.grade));
+				return acc;
+			}, []),
+			map(arr => arr.reduce((acc, current) => acc + current, 0) / arr.length)
+		).subscribe({
+			next(value) {
+				console.log("MMMMMM MEAN average MMMMMM");
+				console.log("Maximilien Romain has a GPA of :", value);
+			}
+		});
+		const averageGrade = ppQueryBis.pipe(
+			filter(object => object.school == "VUB"),
+			scan((acc, curr) => {
+				acc.push(Number(curr.grade));
+				return acc;
+			}, []),
+			map(arr => arr.reduce((acc, current) => acc + current, 0) / arr.length)
+		).subscribe({
+			next(value) {
+				console.log("MMMMMM MEAN average MMMMMM");
+				console.log("VUB has a student average of :", value);
+			}
 		});
 
 		// const streamProcessed = reactiveProxyjs.streamProcessing(hyperledgerProxy, {
@@ -117,21 +160,7 @@ async function gatewayConnexion() {
 		// 	}
 		// })
 
-		const source = of({name: "hello", value:1}, {name: "hello", value:2}, {name: "hello", value:10}, {name: "hello", value:4});
-		const example = source.pipe(reduce((acc, val) => {return (acc + (val.value))}, 0));
-		example.subscribe({next(value) {console.log("sum" +value)}});
 
-		const testing = ppQueryBis.pipe(
-			scan((acc, value) => {
-				return acc + (Number(value.Record.grade))
-			}, 0)
-		);
-		testing.subscribe({
-			next(value) {
-				console.log("MMMMM SUM of the grades MMMMM");
-				console.log(value);
-			}
-		});
 
 		/*
 		const blockhistoryStream = reactiveProxyjs.blocksProxy(hyperledgerProxy);
