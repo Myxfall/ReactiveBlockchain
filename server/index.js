@@ -14,7 +14,7 @@ const port = process.env.PORT || 3000;
 
 const { Subject, ReplaySubject, from, of, throwError, merge } = require("rxjs");
 const { Observable } = require("rxjs/Observable");
-const { catchError, map, reduce, scan, filter, take, delay } = require("rxjs/operators");
+const { catchError, map, reduce, scan, filter, take, delay, mergeMap, groupBy, last } = require("rxjs/operators");
 
 
 const reactiveProxyjs = require('../../fabric-samples/fabcar/javascript/reactiveProxy');
@@ -40,6 +40,11 @@ async function gatewayConnexion() {
 			* Get grade of one student V
 			* get diplomas of one unif V
 			* get average grade of one unif V
+			* Get unif average : average student then average studentS -> not possible cause not tables / signals
+
+			Blockchain specific
+			* Send infos to blockchain & verify TX id from block streams
+			* ?
 
 		*/
 
@@ -105,9 +110,6 @@ async function gatewayConnexion() {
 			fromStatic: ["queryAllDiplomas"],
 		});
 		diplomasStream
-		.pipe(
-			filter(object => object.Record.school == "VUB")
-		)
 		.subscribe({
 			next(value) {
 				console.log("MMMMM Filter one university MMMMM");
@@ -148,6 +150,44 @@ async function gatewayConnexion() {
 			}
 		});
 
+		const averageUniPerStudent = ppQueryBis.pipe(
+			groupBy(gradeStudent => gradeStudent.username),
+			mergeMap((student) => student.pipe(
+				scan((acc, curr) => {
+					acc.push(Number(curr.grade));
+					return acc;
+				}, []),
+				map(arr => arr.reduce((acc, current) => acc + current, 0) / arr.length),
+			))
+		)
+		averageUniPerStudent.subscribe({
+			next(value) {
+				console.log("===== UNIF STUDENT AVERAGE =====");
+				console.log(value);
+			}
+		});
+		const averageUniStudent = averageUniPerStudent.pipe(
+			scan((acc, curr) => {
+				acc.push(curr);
+				return acc;
+			}, []),
+			map(arr => arr.reduce((acc, current) => acc + current, 0) / arr.length)
+		).subscribe({
+			next(value) {
+				console.log("===== UNI AVERAGE =====");
+				console.log(value);
+			}
+		});
+
+		const blockhistoryStream = reactiveProxyjs.blocksProxy(hyperledgerProxy);
+		blockhistoryStream.subscribe({
+			next(value) {
+				console.log("===== BLOCKS HISTORY =====");
+				console.log(value.header);
+				console.log(value.data.data[0].payload.header.channel_header);
+			}
+		});
+
 		// const streamProcessed = reactiveProxyjs.streamProcessing(hyperledgerProxy, {
 		// 	select: ["first_name"],
 		// 	from: [ppQuery, ppQueryBis],
@@ -159,18 +199,6 @@ async function gatewayConnexion() {
 		// 		console.log(value);
 		// 	}
 		// })
-
-
-
-		/*
-		const blockhistoryStream = reactiveProxyjs.blocksProxy(hyperledgerProxy);
-		blockhistoryStream.subscribe({
-			next(value) {
-				console.log("===== BLOCKS HISTORY =====");
-				console.log(value);
-			}
-		});
-		*/
 
 		// const test = reactiveProxyjs.testBlocks(hyperledgerProxy);
 		// test.subscribe({
@@ -255,39 +283,39 @@ async function gatewayConnexion() {
 		// 		}
 		// 	});
 		// }, 2500);
-		// setTimeout(async () => {
-		// 	const txStream = await reactiveProxyjs.sendTransaction(hyperledgerProxy, {
-		// 			contractName: "createDiploma",
-		// 			args: {
-		// 				username: "maxromai",
-		// 				school: "ICHEC",
-		// 				study: "theatre and being good",
-		// 				first_name: "Maximilien",
-		// 				last_name: "Romain",
-		// 			}
-		// 		});
-		// 	txStream
-		// 	.pipe(
-		// 		catchError(err =>  {
-		// 			console.log("====== Handling error and rethrow it ======");
-		// 			console.log(err);
-		// 			return throwError(err);
-		// 		})
-		// 	)
-		// 	.subscribe({
-		// 		next(value) {
-		// 			console.log("+++ index server : tx stream +++");
-		// 			console.log(value);
-		// 		},
-		// 		error(err) {
-		// 			console.log("+++ index server : error value +++");
-		// 			console.log(err);
-		// 		},
-		// 		complete() {
-		// 			console.log("+++ index tx stream completed +++");
-		// 		}
-		// 	});
-		// }, 5000);
+		setTimeout(async () => {
+			const txStream = await reactiveProxyjs.sendTransaction(hyperledgerProxy, {
+					contractName: "createDiploma",
+					args: {
+						username: "maxromai",
+						school: "ICHEC",
+						study: "theatre and being good",
+						first_name: "Maximilien",
+						last_name: "Romain",
+					}
+				});
+			txStream
+			.pipe(
+				catchError(err =>  {
+					console.log("====== Handling error and rethrow it ======");
+					console.log(err);
+					return throwError(err);
+				})
+			)
+			.subscribe({
+				next(value) {
+					console.log("+++ index server : tx stream +++");
+					console.log(value);
+				},
+				error(err) {
+					console.log("+++ index server : error value +++");
+					console.log(err);
+				},
+				complete() {
+					console.log("+++ index tx stream completed +++");
+				}
+			});
+		}, 5000);
 
 		const observable = new Observable(subscriber => {
 			  subscriber.next(1);
