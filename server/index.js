@@ -104,52 +104,52 @@ async function gatewayConnexion() {
 		// 		console.log(value);
 		// 	}
 		// });
-		const diplomasStream = await reactiveProxyjs.ppQuery(hyperledgerProxy, {
-			select: "*",
-			from: ["newDiploma"],
-			fromStatic: ["queryAllDiplomas"],
-		});
-		diplomasStream
-		.subscribe({
-			next(value) {
-				console.log("MMMMM Filter one university MMMMM");
-				console.log(value);
-			}
-		})
-
+		// const diplomasStream = await reactiveProxyjs.ppQuery(hyperledgerProxy, {
+		// 	select: "*",
+		// 	from: ["newDiploma"],
+		// 	fromStatic: ["queryAllDiplomas"],
+		// });
+		// diplomasStream
+		// .subscribe({
+		// 	next(value) {
+		// 		console.log("MMMMM Filter one university MMMMM");
+		// 		console.log(value);
+		// 	}
+		// })
+		//
 		const ppQueryBis = await reactiveProxyjs.ppQuery(hyperledgerProxy, {
 			select: "*",
 			from: ["newGrade", "changeGrade"],
 			fromStatic: ["queryAllGrades"],
 			where: ["maxromai"]
 		});
-		const averageGradeStudent = ppQueryBis.pipe(
-			filter(object => object.first_name == "Maximilien" && object.last_name == "Romain"),
-			scan((acc, curr) => {
-				acc.push(Number(curr.grade));
-				return acc;
-			}, []),
-			map(arr => arr.reduce((acc, current) => acc + current, 0) / arr.length)
-		).subscribe({
-			next(value) {
-				console.log("MMMMMM MEAN average MMMMMM");
-				console.log("Maximilien Romain has a GPA of :", value);
-			}
-		});
-		const averageGrade = ppQueryBis.pipe(
-			filter(object => object.school == "VUB"),
-			scan((acc, curr) => {
-				acc.push(Number(curr.grade));
-				return acc;
-			}, []),
-			map(arr => arr.reduce((acc, current) => acc + current, 0) / arr.length)
-		).subscribe({
-			next(value) {
-				console.log("MMMMMM MEAN average MMMMMM");
-				console.log("VUB has a student average of :", value);
-			}
-		});
-
+		// const averageGradeStudent = ppQueryBis.pipe(
+		// 	filter(object => object.first_name == "Maximilien" && object.last_name == "Romain"),
+		// 	scan((acc, curr) => {
+		// 		acc.push(Number(curr.grade));
+		// 		return acc;
+		// 	}, []),
+		// 	map(arr => arr.reduce((acc, current) => acc + current, 0) / arr.length)
+		// ).subscribe({
+		// 	next(value) {
+		// 		console.log("MMMMMM MEAN average MMMMMM");
+		// 		console.log("Maximilien Romain has a GPA of :", value);
+		// 	}
+		// });
+		// const averageGrade = ppQueryBis.pipe(
+		// 	filter(object => object.school == "VUB"),
+		// 	scan((acc, curr) => {
+		// 		acc.push(Number(curr.grade));
+		// 		return acc;
+		// 	}, []),
+		// 	map(arr => arr.reduce((acc, current) => acc + current, 0) / arr.length)
+		// ).subscribe({
+		// 	next(value) {
+		// 		console.log("MMMMMM MEAN average MMMMMM");
+		// 		console.log("VUB has a student average of :", value);
+		// 	}
+		// });
+		//
 		const averageUniPerStudent = ppQueryBis.pipe(
 			groupBy(gradeStudent => gradeStudent.username),
 			mergeMap((student) => student.pipe(
@@ -183,10 +183,31 @@ async function gatewayConnexion() {
 		blockhistoryStream.subscribe({
 			next(value) {
 				console.log("===== BLOCKS HISTORY =====");
-				console.log(value.header);
-				console.log(value.data.data[0].payload.header.channel_header);
+				//console.log(value.header);
+				if (value.data.data[0].payload.data.actions) {
+					console.log(value.data.data[0].payload.data.actions[0].payload.chaincode_proposal_payload.input.chaincode_spec.input.args)
+
+					for (var i in value.data.data[0].payload.data.actions[0].payload.chaincode_proposal_payload.input.chaincode_spec.input.args) {
+						console.log(value.data.data[0].payload.data.actions[0].payload.chaincode_proposal_payload.input.chaincode_spec.input.args[i].toString())
+					}
+				}
+				//console.log(value.data.data[0].payload.header.channel_header.tx_id);
 			}
 		});
+		const pushQuery = await reactiveProxyjs.pushQuery(hyperledgerProxy,
+			{
+				select: "*",
+				from: ["newGrade", "newDiploma"],
+				where: ["maxromai"]
+			}
+		);
+		pushQuery.subscribe({
+			next(value) {
+				console.log("mmmmm NEW VALUE mmmm");
+				console.log(value);
+			}
+		});
+		const testTxStream = reactiveProxyjs.transactionsProxy(hyperledgerProxy, blockhistoryStream, [pushQuery]);
 
 		// const streamProcessed = reactiveProxyjs.streamProcessing(hyperledgerProxy, {
 		// 	select: ["first_name"],
@@ -315,114 +336,7 @@ async function gatewayConnexion() {
 					console.log("+++ index tx stream completed +++");
 				}
 			});
-		}, 5000);
-
-		const observable = new Observable(subscriber => {
-			  subscriber.next(1);
-			  subscriber.next(2);
-			  subscriber.next(3);
-		});
-		const observableBis = new Observable(subscriber => {
-			  subscriber.next(4);
-			  subscriber.next(5);
-			  subscriber.next(6);
-		});
-		const third = merge(
-			observable,
-			observableBis
-		)
-		// third.subscribe({
-		// 	next(x) {
-		// 		console.log(x)
-		// 	}
-		// });
-
-		const testMerge = new ReplaySubject();
-		const testarray = [third, testMerge];
-		const merged = merge(
-			...testarray
-		);
-		testMerge.next(10);
-		testMerge.next(11);
-
-		merged.subscribe({
-			next(value) {
-				console.log(value);
-			}
-		});
-
-		//moduleStream = await reactiveProxyjs.getMainStream();
-
-		// Throw error
-		// moduleStream.next("Just a hello world");
-		// // Send query to blockchain
-		// moduleStream.next(queryDiploma = {
-		// 	type: "query_blockchain",
-		// 	contract_name: "queryCar",
-		// 	args: ["CAR1"]
-		// });
-		// moduleStream.next(queryDiploma = {
-		// 	type: "query_blockchain",
-		// 	contract_name: "queryAllDiplomas",
-		// 	args: []
-		// });
-		// const obs_test = of({
-		// 	type: "test_JSON_stream",
-		// 	contract_name: "just_something",
-		// 	args: [1,2,3]
-		// });
-		// moduleStream.next({
-		// 	type: "specific_test",
-		// 	contract_name: "test_name",
-		// 	args: obs_test
-		// })
-
-		// moduleStream.next({
-		// 	type: "block_history"
-		// })
-		//
-		// moduleStream.next({
-		// 	type: "listen_blockchain",
-		// 	eventName: "sent"
-		// });
-
-		// setTimeout(() => {  console.log("Delaying"); }, 5000);
-		// setTimeout(() => {
-		// 	moduleStream.next({
-		// 		type: "invoke_blockchain",
-		// 		contractName: "createDiploma",
-		// 		args: {
-		// 			username: "tperale",
-		// 			school: "VUBBBB",
-		// 			study: "Computer Science",
-		// 			first_name: "Thomas",
-		// 			last_name: "Perale"
-		// 		}
-		// 	})
-		// }, 5000);
-
-
-
-
-		// ===== END OF TESTING UNIT =====
-
-		// [queryProxy, invokeProxy, blocksProxy] = await reactiveProxyjs.getProxies(QUERY_CHAINCODE, EVENT_LISTENERS);
-		//
-		// blocksProxy.subscribe({
-		// 	next(value) {
-		// 		console.log("Blocks Stream, got New block :");
-		// 		var blocks_json = JSON.parse(value);
-		// 		console.log(util.inspect(blocks_json.header, {showHidden: false, depth: 5}))
-		//
-		// 	},
-		// 	eror(err) {
-		// 		console.log("Blocks Stream : Something wrong happened with", err);
-		// 	},
-		// 	complete() {
-		// 		console.log("Blocks Stream completed");
-		// 	}
-		// })
-
+		}, 2000);
 	} catch (error) {
 		console.error(`Failed to submit transaction: ${error}`);
 		process.exit(1);
@@ -454,27 +368,49 @@ function socketConnexion(socket) {
 	})
 }
 
-async function sendMessage(message) {
-	try {
-		//invokejs.main(contract, message);
-		invokeProxy.next(message);
-
-	} catch (error) {
-		console.error(`Failed to submit transaction: ${error}`);
-		process.exit(1);
-	}
-}
-
 async function sendDiploma(new_diploma) {
 	try {
-		invokeProxy.next(new_diploma);
+		//invokeProxy.next(new_diploma);
+
+		const txStreamb = await reactiveProxyjs.sendTransaction(hyperledgerProxy, new_diploma);
+		const txStream = await reactiveProxyjs.sendTransaction(hyperledgerProxy, {
+				contractName: "createDiploma",
+				args: {
+					username: "maxromai",
+					school: "ICHEC",
+					study: "theatre and being good",
+					first_name: "Maximilien",
+					last_name: "Romain",
+				}
+			});
+		txStream
+		.pipe(
+			catchError(err =>  {
+				console.log("====== Handling error and rethrow it ======");
+				console.log(err);
+				return throwError(err);
+			})
+		)
+		.subscribe({
+			next(value) {
+				console.log("+++ index server : tx stream +++");
+				console.log(value);
+			},
+			error(err) {
+				console.log("+++ index server : error value +++");
+				console.log(err);
+			},
+			complete() {
+				console.log("+++ index tx stream completed +++");
+			}
+		});
+
 	} catch (e) {
 		console.error(`Failed to submit transaction with : ${e}`);
 		process.exit(1);
 	}
 }
 
-//proxyConnexion();
 gatewayConnexion();
 io.on('connection', (socket) => {
     console.log(`user connected with socket : ${socket.id}`);
