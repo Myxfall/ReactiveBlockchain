@@ -179,35 +179,79 @@ async function gatewayConnexion() {
 			}
 		});
 
-		const blockhistoryStream = reactiveProxyjs.blocksProxy(hyperledgerProxy);
-		blockhistoryStream.subscribe({
-			next(value) {
-				console.log("===== BLOCKS HISTORY =====");
-				//console.log(value.header);
-				if (value.data.data[0].payload.data.actions) {
-					console.log(value.data.data[0].payload.data.actions[0].payload.chaincode_proposal_payload.input.chaincode_spec.input.args)
+		// const blockhistoryStream = reactiveProxyjs.blocksProxy(hyperledgerProxy);
+		// blockhistoryStream.subscribe({
+		// 	next(value) {
+		// 		console.log("===== BLOCKS HISTORY =====");
+		// 		//console.log(value.header);
+		// 		if (value.data.data[0].payload.data.actions) {
+		// 			console.log(value.data.data[0].payload.data.actions[0].payload.chaincode_proposal_payload.input.chaincode_spec.input.args)
+		//
+		// 			for (var i in value.data.data[0].payload.data.actions[0].payload.chaincode_proposal_payload.input.chaincode_spec.input.args) {
+		// 				console.log(value.data.data[0].payload.data.actions[0].payload.chaincode_proposal_payload.input.chaincode_spec.input.args[i].toString())
+		// 			}
+		// 		}
+		// 		//console.log(value.data.data[0].payload.header.channel_header.tx_id);
+		// 	}
+		// });
+		// const pushQuery = await reactiveProxyjs.pushQuery(hyperledgerProxy,
+		// 	{
+		// 		select: "*",
+		// 		from: ["newGrade", "newDiploma"],
+		// 		where: ["maxromai"]
+		// 	}
+		// );
+		// pushQuery.subscribe({
+		// 	next(value) {
+		// 		console.log("mmmmm NEW VALUE mmmm");
+		// 		console.log(value);
+		// 	}
+		// });
+		// const testTxStream = reactiveProxyjs.transactionsProxy(hyperledgerProxy, blockhistoryStream, [pushQuery]);
 
-					for (var i in value.data.data[0].payload.data.actions[0].payload.chaincode_proposal_payload.input.chaincode_spec.input.args) {
-						console.log(value.data.data[0].payload.data.actions[0].payload.chaincode_proposal_payload.input.chaincode_spec.input.args[i].toString())
-					}
-				}
-				//console.log(value.data.data[0].payload.header.channel_header.tx_id);
-			}
-		});
-		const pushQuery = await reactiveProxyjs.pushQuery(hyperledgerProxy,
-			{
-				select: "*",
-				from: ["newGrade", "newDiploma"],
-				where: ["maxromai"]
-			}
-		);
-		pushQuery.subscribe({
+		// ===== Building Table Stream =====
+		ppQueryBis.subscribe({
 			next(value) {
-				console.log("mmmmm NEW VALUE mmmm");
 				console.log(value);
 			}
 		});
-		const testTxStream = reactiveProxyjs.transactionsProxy(hyperledgerProxy, blockhistoryStream, [pushQuery]);
+		const tableStream = reactiveProxyjs.tableProxy(hyperledgerProxy, {
+			from: ppQueryBis,
+			groupBy: ["username", "course"]
+		});
+		tableStream.subscribe({
+			next(value) {
+				console.log("===== Table Stream =====");
+				console.log(value);
+				var studentGrades = {};
+				Object.keys(value).map((student) => {
+					if (value[student].username in studentGrades) {
+						studentGrades[value[student].username].push(value[student]);
+					} else {
+						studentGrades[value[student].username] = [value[student]];
+					}
+				})
+				console.log(studentGrades);
+
+				var totalMean = 0;
+				var counter = 0;
+
+				// ===== Calculate Mean of every student =====
+				Object.keys(studentGrades).map((student) => {
+					const grades = studentGrades[student];
+
+					var mean = 0;
+					for (grade in grades) {
+						mean += Number(grades[grade].grade);
+					}
+					mean = mean / grades.length;
+					console.log(student + " " + mean);
+					totalMean += mean;
+					counter += 1;
+				})
+				console.log("Students Mean : " + totalMean/counter);
+			}
+		})
 
 		// const streamProcessed = reactiveProxyjs.streamProcessing(hyperledgerProxy, {
 		// 	select: ["first_name"],
@@ -304,39 +348,40 @@ async function gatewayConnexion() {
 		// 		}
 		// 	});
 		// }, 2500);
-		setTimeout(async () => {
-			const txStream = await reactiveProxyjs.sendTransaction(hyperledgerProxy, {
-					contractName: "createDiploma",
-					args: {
-						username: "maxromai",
-						school: "ICHEC",
-						study: "theatre and being good",
-						first_name: "Maximilien",
-						last_name: "Romain",
-					}
-				});
-			txStream
-			.pipe(
-				catchError(err =>  {
-					console.log("====== Handling error and rethrow it ======");
-					console.log(err);
-					return throwError(err);
-				})
-			)
-			.subscribe({
-				next(value) {
-					console.log("+++ index server : tx stream +++");
-					console.log(value);
-				},
-				error(err) {
-					console.log("+++ index server : error value +++");
-					console.log(err);
-				},
-				complete() {
-					console.log("+++ index tx stream completed +++");
-				}
-			});
-		}, 2000);
+		// setTimeout(async () => {
+		// 	const txStream = await reactiveProxyjs.sendTransaction(hyperledgerProxy, {
+		// 			contractName: "createDiploma",
+		// 			args: {
+		// 				username: "maxromai",
+		// 				school: "ICHEC",
+		// 				study: "theatre and being good",
+		// 				first_name: "Maximilien",
+		// 				last_name: "Romain",
+		// 			}
+		// 		});
+		// 	txStream
+		// 	.pipe(
+		// 		catchError(err =>  {
+		// 			console.log("====== Handling error and rethrow it ======");
+		// 			console.log(err);
+		// 			return throwError(err);
+		// 		})
+		// 	)
+		// 	.subscribe({
+		// 		next(value) {
+		// 			console.log("+++ index server : tx stream +++");
+		// 			console.log(value);
+		// 		},
+		// 		error(err) {
+		// 			console.log("+++ index server : error value +++");
+		// 			console.log(err);
+		// 		},
+		// 		complete() {
+		// 			console.log("+++ index tx stream completed +++");
+		// 		}
+		// 	});
+		// }, 2000);
+
 	} catch (error) {
 		console.error(`Failed to submit transaction: ${error}`);
 		process.exit(1);
